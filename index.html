@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aerolíneas Fatimetu — Reservas</title>
+  <style>
+    :root{
+      --ink:#24313a; --muted:#66737c; --brand:#1f6f78; --brand2:#d9a441;
+      --cream:#f8f5ee; --card:#fff; --line:#e4e1d9; --shadow:0 18px 50px rgba(35,48,58,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,#f5f0e7,#eef5f4)}
+    header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+    .nav{max-width:1100px;margin:auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800}
+    .brand img{width:48px;height:48px;object-fit:cover;border-radius:50%;border:2px solid var(--brand2)}
+    .brand small{display:block;color:var(--muted);font-weight:500;font-size:11px;margin-top:2px}
+    .lang{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 13px;font-weight:700;cursor:pointer}
+    main{max-width:1100px;margin:0 auto;padding:48px 20px 70px}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:34px;align-items:center;margin-bottom:30px}
+    .hero h1{font-size:clamp(34px,5vw,58px);line-height:1.02;margin:0 0 14px}
+    .hero p{font-size:18px;color:var(--muted);max-width:650px;line-height:1.6}
+    .portrait{width:min(330px,100%);aspect-ratio:1/1;object-fit:cover;border-radius:28px;box-shadow:var(--shadow);border:7px solid white;justify-self:end}
+    .notice{display:inline-flex;background:#fff4d8;color:#74530b;border:1px solid #efd58d;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:26px}
+    .section-title{margin:0 0 18px;font-size:21px}
+    .formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .traveler-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+    label{font-size:13px;font-weight:800;display:block;margin-bottom:7px}
+    select,input{width:100%;border:1px solid #d9d8d2;border-radius:12px;padding:13px 12px;font:inherit;background:#fff;color:var(--ink)}
+    select:focus,input:focus{outline:3px solid rgba(31,111,120,.13);border-color:var(--brand)}
+    .actions{margin-top:18px;display:flex;justify-content:flex-end}
+    button.primary{border:0;border-radius:12px;padding:13px 20px;background:var(--brand);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+    button.primary:hover{filter:brightness(.94)}
+    #result{display:none;margin-top:24px}
+    .ticket{border:1px solid #cddddd;border-radius:20px;overflow:hidden;background:#fbffff;box-shadow:var(--shadow)}
+    .ticket-head{padding:18px 22px;background:var(--brand);color:#fff;display:flex;justify-content:space-between;gap:15px;align-items:center}
+    .ticket-brand{display:flex;align-items:center;gap:12px}
+    .ticket-logo{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.85);background:#fff}
+    .ticket-head strong{font-size:19px}
+    .ticket-head small{display:block;opacity:.85;margin-top:2px}
+    .ticket-mark{background:#fff4d8;color:#74530b;border:1px solid #efd58d;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:900;white-space:nowrap}
+    .ticket-body{padding:22px}
+    .passenger{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px}
+    .passenger .detail{background:#f4f7f7}
+    .route{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;margin-bottom:20px}
+    .airport{font-size:29px;font-weight:900}
+    .city{color:var(--muted);font-size:13px}
+    .plane{font-size:24px}
+    .details{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .detail{background:#f4f7f7;border-radius:12px;padding:12px}
+    .detail span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;font-weight:800}
+    .detail b{display:block;margin-top:4px}
+    .ticket-footer{margin-top:16px;padding-top:14px;border-top:1px dashed #c9d7d7;display:flex;justify-content:space-between;gap:16px;align-items:center;color:var(--muted);font-size:11px}
+    .barcode{font-family:monospace;letter-spacing:4px;font-size:16px;color:var(--ink)}
+    footer{max-width:1100px;margin:auto;padding:0 20px 30px;color:var(--muted);font-size:12px;text-align:center}
+    [dir="rtl"] .nav,[dir="rtl"] .brand{direction:rtl}
+    [dir="rtl"] .actions{justify-content:flex-start}
+    [dir="rtl"] .ticket-head{direction:rtl}
+    [dir="rtl"] .ticket-head,.ticket-brand{direction:rtl}
+    [dir="rtl"] .ticket-footer{direction:rtl}
+    @media(max-width:760px){
+      .hero{grid-template-columns:1fr}.portrait{justify-self:center;width:240px}
+      .formgrid,.traveler-grid,.details,.passenger{grid-template-columns:1fr}
+      .route{gap:8px}.airport{font-size:23px}
+      .ticket-footer{align-items:flex-start;flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="brand">
+      <img src="fatimetu.jpg" alt="Logo de Aerolíneas Fatimetu">
+      <div>Aerolíneas Fatimetu<small>Portal de reservas</small></div>
+    </div>
+    <button class="lang" id="langBtn" type="button">العربية</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <!--span class="notice" id="noticeLabel">Muestra · no válido para viajar</span-->
+      <h1 id="title">Reserva tu próximo vuelo</h1>
+      <p id="subtitle">Selecciona el origen, el destino, la fecha y completa los datos del viajero. El resultado mostrará un billete de muestra con los datos del vuelo.</p>
+    </div>
+    <img class="portrait" src="fatimetu.jpg" alt="Imagen de Aerolíneas Fatimetu">
+  </section>
+
+  <section class="card">
+    <h2 class="section-title" id="flightSection">Datos del vuelo</h2>
+    <div class="formgrid">
+      <div>
+        <label id="fromLabel" for="from">Origen</label>
+        <select id="from">
+          <option value="MAD">Madrid (MAD)</option>
+          <option value="BCN">Barcelona (BCN)</option>
+          <option value="VLC">Valencia (VLC)</option>
+          <option value="SEV">Sevilla (SEV)</option>
+          <option value="ALG">Argel (ALG)</option>
+          <option value="ORN">Orán (ORN)</option>
+          <option value="AAO">Annaba (AAO)</option>
+          <option value="BJA">Bejaia (BJA)</option>
+          <option value="EUN">El Aaiún (EUN)</option>
+          <option value="VIL">Dajla (VIL)</option>
+          <option value="SMW">Smara (SMW)</option>
+        </select>
+      </div>
+      <div>
+        <label id="toLabel" for="to">Destino</label>
+        <select id="to">
+          <option value="EUN">El Aaiún (EUN)</option>
+          <option value="VIL">Dajla (VIL)</option>
+          <option value="SMW">Smara (SMW)</option>
+          <option value="MAD">Madrid (MAD)</option>
+          <option value="BCN">Barcelona (BCN)</option>
+          <option value="VLC">Valencia (VLC)</option>
+          <option value="SEV">Sevilla (SEV)</option>
+          <option value="ALG">Argel (ALG)</option>
+          <option value="ORN">Orán (ORN)</option>
+          <option value="AAO">Annaba (AAO)</option>
+          <option value="BJA">Bejaia (BJA)</option>
+        </select>
+      </div>
+      <div>
+        <label id="dateLabel" for="date">Fecha del vuelo</label>
+        <input id="date" type="date">
+      </div>
+    </div>
+
+    <h2 class="section-title" id="travelerSection" style="margin-top:24px">Datos del viajero</h2>
+    <div class="traveler-grid">
+      <div>
+        <label id="nameLabel" for="name">Nombre</label>
+        <input id="name" type="text" autocomplete="given-name">
+      </div>
+      <div>
+        <label id="surnameLabel" for="surname">Apellidos</label>
+        <input id="surname" type="text" autocomplete="family-name">
+      </div>
+      <div>
+        <label id="documentLabel" for="document">Documento</label>
+        <input id="document" type="text" autocomplete="off">
+      </div>
+      <div>
+        <label id="nationalityLabel" for="nationality">Nacionalidad</label>
+        <input id="nationality" type="text" autocomplete="country-name">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="searchBtn" type="button">Buscar vuelo</button>
+    </div>
+  </section>
+
+  <section id="result">
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="ticket-brand">
+          <img class="ticket-logo" src="fatimetu.jpg" alt="Logo de Aerolíneas Fatimetu">
+          <div>
+            <strong id="ticketTitle">Billete de vuelo</strong>
+            <small id="ticketAirline">Aerolíneas Fatimetu</small>
+          </div>
+        </div>
+        <!--span class="ticket-mark" id="ticketMark">MUESTRA · NO VÁLIDO</span-->
+      </div>
+      <div class="ticket-body">
+        <div class="passenger">
+          <div class="detail"><span id="passengerDetail">Pasajero</span><b id="rPassenger">—</b></div>
+          <div class="detail"><span id="documentDetail">Documento</span><b id="rDocument">—</b></div>
+          <div class="detail"><span id="nationalityDetail">Nacionalidad</span><b id="rNationality">—</b></div>
+        </div>
+
+        <div class="route">
+          <div><div class="airport" id="rFrom">MAD</div><div class="city" id="rFromCity">Madrid</div></div>
+          <div class="plane">✈</div>
+          <div style="text-align:right"><div class="airport" id="rTo">EUN</div><div class="city" id="rToCity">El Aaiún</div></div>
+        </div>
+
+        <div class="details">
+          <div class="detail"><span id="dateDetail">Fecha</span><b id="rDate">—</b></div>
+          <div class="detail"><span id="flightDetail">Vuelo</span><b id="rFlight">AF 4821</b></div>
+          <div class="detail"><span id="timeDetail">Horario</span><b id="rTime">08:40 · 11:10</b></div>
+          <div class="detail"><span id="seatDetail">Asiento</span><b id="rSeat">14A</b></div>
+          <div class="detail"><span id="gateDetail">Puerta</span><b id="rGate">B12</b></div>
+          <div class="detail"><span id="statusDetail">Estado</span><b id="rStatus">Confirmado</b></div>
+          <div class="detail"><span id="bookingDetail">Localizador</span><b id="rBooking">—</b></div>
+          <div class="detail"><span id="classDetail">Clase</span><b id="rClass">Económica</b></div>
+        </div>
+
+        <div class="ticket-footer">
+          <span id="validityText">Este documento es una muestra visual y no es válido para embarque.</span>
+          <span class="barcode" id="barcode">|||| ||| |||| | |||</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="footer">Aerolíneas Fatimetu — Información de muestra. No realiza reservas reales ni emite billetes válidos para viajar.</footer>
+
+<script>
+const airports = {
+  MAD:{es:"Madrid",ar:"مدريد",countryEs:"España",countryAr:"إسبانيا"},
+  BCN:{es:"Barcelona",ar:"برشلونة",countryEs:"España",countryAr:"إسبانيا"},
+  VLC:{es:"Valencia",ar:"فالنسيا",countryEs:"España",countryAr:"إسبانيا"},
+  SEV:{es:"Sevilla",ar:"إشبيلية",countryEs:"España",countryAr:"إسبانيا"},
+  ALG:{es:"Argel",ar:"الجزائر",countryEs:"Argelia",countryAr:"الجزائر"},
+  ORN:{es:"Orán",ar:"وهران",countryEs:"Argelia",countryAr:"الجزائر"},
+  AAO:{es:"Annaba",ar:"عنابة",countryEs:"Argelia",countryAr:"الجزائر"},
+  BJA:{es:"Bejaia",ar:"بجاية",countryEs:"Argelia",countryAr:"الجزائر"},
+  EUN:{es:"El Aaiún",ar:"العيون",countryEs:"Sáhara Occidental",countryAr:"الصحراء الغربية"},
+  VIL:{es:"Dajla",ar:"الداخلة",countryEs:"Sáhara Occidental",countryAr:"الصحراء الغربية"},
+  SMW:{es:"Smara",ar:"السمارة",countryEs:"Sáhara Occidental",countryAr:"الصحراء الغربية"}
+};
+let lang="es";
+
+const T = {
+  es:{
+    lang:"العربية", notice:"Muestra · no válido para viajar", title:"Reserva tu próximo vuelo",
+    subtitle:"Selecciona el origen, el destino, la fecha y completa los datos del viajero. El resultado mostrará un billete de muestra con los datos del vuelo.",
+    flightSection:"Datos del vuelo", travelerSection:"Datos del viajero",
+    from:"Origen", to:"Destino", date:"Fecha del vuelo",
+    name:"Nombre", surname:"Apellidos", document:"Documento", nationality:"Nacionalidad",
+    search:"Buscar vuelo", ticket:"Billete de vuelo", mark:"MUESTRA · NO VÁLIDO",
+    passenger:"Pasajero", documentD:"Documento", nationalityD:"Nacionalidad",
+    dateD:"Fecha", flight:"Vuelo", time:"Horario", seat:"Asiento", gate:"Puerta",
+    status:"Estado", statusVal:"Confirmado", booking:"Localizador", classD:"Clase", classVal:"Económica",
+    validity:"Este documento es una muestra visual y no es válido para embarque.",
+    footer:"Aerolíneas Fatimetu — Información de muestra. No realiza reservas reales ni emite billetes válidos para viajar."
+  },
+  ar:{
+    lang:"Español", notice:"نموذج", title:"احجز رحلتك القادمة",
+    subtitle:"اختر نقطة الانطلاق والوجهة والتاريخ، ثم أكمل بيانات المسافر. ستظهر تذكرة نموذجية تحتوي على بيانات الرحلة.",
+    flightSection:"بيانات الرحلة", travelerSection:"بيانات المسافر",
+    from:"نقطة الانطلاق", to:"الوجهة", date:"تاريخ الرحلة",
+    name:"الاسم", surname:"اسم العائلة", document:"الوثيقة", nationality:"الجنسية",
+    search:"البحث عن رحلة", ticket:"تذكرة الرحلة", mark:"نموذج · غير صالح",
+    passenger:"المسافر", documentD:"الوثيقة", nationalityD:"الجنسية",
+    dateD:"التاريخ", flight:"الرحلة", time:"الوقت", seat:"المقعد", gate:"البوابة",
+    status:"الحالة", statusVal:"مؤكد", booking:"رمز الحجز", classD:"الدرجة", classVal:"اقتصادية",
+    validity:"هذه الوثيقة نموذج بصري وليست صالحة للصعود إلى الطائرة.",
+    footer:"الخطوط الجوية فاطيمتو — معلومات نموذجية. لا يتم إجراء حجوزات حقيقية ولا إصدار تذاكر صالحة للسفر."
+  }
+};
+
+function setText(id, key){
+  const el=document.getElementById(id);
+  if(el) el.textContent=T[lang][key];
+}
+
+function updateSelectLabels(){
+  document.querySelectorAll("#from option,#to option").forEach(o=>{
+    const a=airports[o.value];
+    o.textContent = `${a[lang]} (${o.value})`;
+  });
+}
+
+function refreshTicketText(){
+  const f=document.getElementById("from").value, t=document.getElementById("to").value;
+  const cKey=lang==="es" ? "countryEs" : "countryAr";
+  document.getElementById("rFromCity").textContent=`${airports[f][lang]} · ${airports[f][cKey]}`;
+  document.getElementById("rToCity").textContent=`${airports[t][lang]} · ${airports[t][cKey]}`;
+  document.getElementById("rStatus").textContent=T[lang].statusVal;
+  document.getElementById("rClass").textContent=T[lang].classVal;
+}
+
+function updateLang(){
+  document.documentElement.lang=lang;
+  document.documentElement.dir=(lang==="ar") ? "rtl" : "ltr";
+
+  const map={
+    noticeLabel:"notice", title:"title", subtitle:"subtitle",
+    flightSection:"flightSection", travelerSection:"travelerSection",
+    fromLabel:"from", toLabel:"to", dateLabel:"date",
+    nameLabel:"name", surnameLabel:"surname", documentLabel:"document", nationalityLabel:"nationality",
+    searchBtn:"search", ticketTitle:"ticket", ticketMark:"mark",
+    passengerDetail:"passenger", documentDetail:"documentD", nationalityDetail:"nationalityD",
+    dateDetail:"dateD", flightDetail:"flight", timeDetail:"time", seatDetail:"seat",
+    gateDetail:"gate", statusDetail:"status", bookingDetail:"booking", classDetail:"classD",
+    validityText:"validity", footer:"footer"
+  };
+  Object.keys(map).forEach(id=>setText(id,map[id]));
+  document.getElementById("langBtn").textContent=T[lang].lang;
+  updateSelectLabels();
+  refreshTicketText();
+
+  document.querySelectorAll("input,select").forEach(el=>{
+    el.dir=(lang==="ar") ? "rtl" : "ltr";
+  });
+}
+
+function randomCode(prefix, length){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s=prefix;
+  for(let i=0;i<length;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+function randomSeat(){
+  return `${Math.floor(Math.random()*28)+1}${["A","B","C","D","E","F"][Math.floor(Math.random()*6)]}`;
+}
+
+function randomGate(){
+  return `${["A","B","C"][Math.floor(Math.random()*3)]}${Math.floor(Math.random()*28)+1}`;
+}
+
+function maskDocument(value){
+  const clean=value.trim();
+  if(clean.length<=4) return clean;
+  return "••••" + clean.slice(-4);
+}
+
+document.getElementById("langBtn").addEventListener("click", function(){
+  lang = (lang === "es") ? "ar" : "es";
+  updateLang();
+});
+
+document.getElementById("searchBtn").onclick=()=>{
+  const f=document.getElementById("from").value;
+  const t=document.getElementById("to").value;
+  const d=document.getElementById("date").value;
+  const name=document.getElementById("name").value.trim();
+  const surname=document.getElementById("surname").value.trim();
+  const documentId=document.getElementById("document").value.trim();
+  const nationality=document.getElementById("nationality").value.trim();
+
+  if(f===t){alert(lang==="es"?"El origen y el destino deben ser diferentes.":"يجب أن تكون نقطة الانطلاق والوجهة مختلفتين.");return;}
+  if(!d){alert(lang==="es"?"Selecciona una fecha de vuelo.":"يرجى اختيار تاريخ الرحلة.");return;}
+  if(!name || !surname || !documentId || !nationality){
+    alert(lang==="es"?"Completa todos los datos del viajero.":"يرجى إكمال جميع بيانات المسافر.");
+    return;
+  }
+
+  const booking=randomCode("",6);
+  const flight=`AF ${Math.floor(1000+Math.random()*8999)}`;
+  document.getElementById("rFrom").textContent=f;
+  document.getElementById("rTo").textContent=t;
+  document.getElementById("rDate").textContent=new Date(d+"T12:00:00").toLocaleDateString(lang==="es"?"es-ES":"ar", {day:"2-digit",month:"2-digit",year:"numeric"});
+  document.getElementById("rPassenger").textContent=`${name} ${surname}`;
+  document.getElementById("rDocument").textContent=maskDocument(documentId);
+  document.getElementById("rNationality").textContent=nationality;
+  document.getElementById("rBooking").textContent=booking;
+  document.getElementById("rFlight").textContent=flight;
+  document.getElementById("rSeat").textContent=randomSeat();
+  document.getElementById("rGate").textContent=randomGate();
+  document.getElementById("rTime").textContent="08:40 · 11:10";
+  document.getElementById("barcode").textContent=`|| ||| | |||| || | ${booking.slice(0,3)}`;
+
+  document.getElementById("result").style.display="block";
+  refreshTicketText();
+  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
+};
+
+const today=new Date();
+document.getElementById("date").min=today.toISOString().slice(0,10);
+updateLang();
+</script>
+</body>
+</html>
